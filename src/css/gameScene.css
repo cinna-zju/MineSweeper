@@ -1,0 +1,54 @@
+
+
+GamePane{
+    -fx-padding: 20px;
+
+    -fx-alignment: center;
+    -fx-hgap: 50px;
+    -fx-vgap: 20px;
+
+
+}
+
+/*#textArea{*/
+
+    /*-fx-stroke-width: 5px;*/
+    /*-fx-stroke: #000000;*/
+/*}*/
+
+Mines{
+    -fx-pref-height: 40px ;
+    -fx-pref-width: 40px;
+    -fx-background-color: #00EE99;
+    -fx-text-fill: #000000;
+    -fx-background-insets: 2;
+
+
+}
+
+Mines:hover{
+    -fx-background-color: #00EE00;
+    -fx-text-fill: #000000;
+    -fx-translate-y: -1px;
+
+
+}
+
+SystemButton{
+    -fx-pref-height: 30px;
+    -fx-pref-width: 120px;
+
+    -fx-background-color:
+            linear-gradient(#ffd65b, #e68400),
+            linear-gradient(#ffef84, #f2ba44),
+            linear-gradient(#ffea6a, #efaa22);
+    /*-fx-background-radius: 30;*/
+    -fx-background-insets: 0,1,2,3,0;
+    -fx-text-fill: #654b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10 20 10 20;
+
+
+}
+
