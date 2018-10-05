@@ -86,7 +86,8 @@ public class GamePane extends GridPane{
         btnSkill.setOnDragDone(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
-                btnSkill.setDisable(true);
+                //TODO debug
+                //btnSkill.setDisable(true);
                 event.consume();
 
             }

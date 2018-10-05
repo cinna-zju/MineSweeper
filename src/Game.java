@@ -18,30 +18,35 @@ public class Game extends Application {
     Map map;
 
     // declare main scene, game scene, skill scene
-    Scene mScene;
+    static Scene mScene;
     Scene gScene;
     Scene sScene;
     Scene mapScene;
 
+    static Stage stage;
+
     public void start(Stage pStage) throws Exception {
 
+
         pStage.setTitle("MineSweeper");
+        stage = pStage;// a copy of
 
         mPane = new MainPane();
         mPane.init();
         mScene = new Scene(mPane, 800, 600);
         mScene.getStylesheets().add("/css/mainScene.css");
 
-
-        gPane = new GamePane();
-        gPane.init();
-        gScene = new Scene(gPane, 800, 600);
-        gScene.getStylesheets().add("/css/gameScene.css");
-
         sPane = new SkillPane();
         sPane.init();
         sScene = new Scene(sPane, 800, 600);
         sScene.getStylesheets().add("/css/skillScene.css");
+
+
+
+        gPane = new GamePane();
+        gScene = new Scene(gPane, 800, 600);
+
+
 
         map = new Map();
         map.init();
@@ -56,43 +61,53 @@ public class Game extends Application {
 
 
         //TODO change first scene here
-        pStage.setScene(mScene);
+        stage.setScene(mScene);
         //pStage.setScene(mapScene);
-        pStage.show();
+        stage.show();
 
 
         // go to the skill scene
         mPane.btnGo.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            pStage.setScene(sScene);
+            stage.setScene(sScene);
 
         });
 
         // exit the game
         mPane.btnExit.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            pStage.close();
+            stage.close();
         });
 
         // the user can choose 3 kinds of skills.
         sPane.vbx1.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            gPane.init();
             gPane.btnSkill.setText("Shield");
-            pStage.setScene(gScene);
+            stage.setScene(gScene);
+            gScene.getStylesheets().add("/css/gameScene.css");
+
 
         });
 
         sPane.vbx2.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            gPane.init();
             gPane.btnSkill.setText("Detector");
             pStage.setScene(gScene);
+            gScene.getStylesheets().add("/css/gameScene.css");
+
 
         });
 
         sPane.vbx3.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            gPane.init();
             gPane.btnSkill.setText("Timer");
-            pStage.setScene(gScene);
+            stage.setScene(gScene);
+            gScene.getStylesheets().add("/css/gameScene.css");
+
 
         });
 
 
     }
+
 
 }
 
