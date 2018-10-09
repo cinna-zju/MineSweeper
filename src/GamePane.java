@@ -2,9 +2,13 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.*;
@@ -14,63 +18,68 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import javax.swing.text.AbstractDocument;
+import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 
 public class GamePane extends GridPane{
     public Label text;
-    private ProgressBar remainTime;
+
     private SystemButton btnSettings;
     public SystemButton btnSkill;
     Mines mines;
+    private VBox textArea;
+    private VBox systemArea;
+    private Label lb_time;
+    private int time;
+
+    private GridPane mineArea;
+    public Timer timer;
 
 
-    public void init(){
-
-        VBox textArea = new VBox();
+    GamePane(){
+        textArea = new VBox();
         text = new Label("Demo!");
-        textArea.getChildren().add(text);
-        textArea.setPrefSize(120,250);
-
-        VBox systemArea = new VBox();
-        systemArea.setSpacing(20);
-
-
-        HBox timeArea = new HBox();
-        Label lb_time = new Label("time");
-
-
-
-        remainTime = new ProgressBar();
-        IntegerProperty seconds = new SimpleIntegerProperty();
-        remainTime.progressProperty().bind(seconds.divide(60.0));
-        Timeline tl = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(remainTime.progressProperty(), 0)),
-                new KeyFrame(Duration.minutes(1), e-> {
-
-                }, new KeyValue(seconds, 60))
-        );
-
-        timeArea.getChildren().addAll(lb_time, remainTime);
-
-        tl.setCycleCount(Animation.INDEFINITE);
-        //tl.play();
-
-
-
-
+        systemArea = new VBox();
+        lb_time = new Label("Remain Time:\n");
+        //TODO change font size in css?
+        lb_time.setStyle("-fx-font-size: 20px;");
         mines = new Mines();
 
-        GridPane mineArea = mines.init(100);
+        textArea.getChildren().add(text);
+        textArea.setPrefSize(120,250);
 
         btnSettings = new SystemButton("Settings");
         btnSkill = new SystemButton("Skill");
         systemArea.getChildren().addAll(btnSettings, btnSkill);
+        systemArea.setSpacing(20);
 
-        this.add(timeArea, 1, 0, 1, 1);
-        this.add(mineArea, 0, 0, 1, 3);
+
+        this.add(lb_time, 1, 0, 1, 1);
         this.add(textArea, 1,1, 1, 1);
         this.add(systemArea,1,2, 1, 1);
 
+        setTime();
+
+
+
+    }
+
+
+    public void init(){
+
+        time = 10;
+
+
+
+        mineArea = mines.init(100);
+
+        updateInfo();
+
+        this.getChildren().removeAll(mineArea);
+        this.add(mineArea, 0, 0, 1, 3);
 
         btnSkill.setOnDragDetected(new EventHandler<MouseEvent>() {
             @Override
@@ -115,5 +124,60 @@ public class GamePane extends GridPane{
             return aaSum;
 
     }
+
+    public void setTime(){
+        try{
+
+            timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            lb_time.setText("Remain Time:\n" + time);
+
+                        }
+                    });
+                    time--;
+
+                    if(time == 0){
+                        //this.cancel();
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (btnSkill.getText().equals("Timer") == false ||
+                                        (btnSkill.getText().equals("Timer") && btnSkill.isDisable() == true)) {
+                                    Alert alt = new Alert(Alert.AlertType.CONFIRMATION);
+                                    alt.setContentText("Time is up");
+
+                                    ButtonType btype = new ButtonType("Back to main menu");
+                                    alt.getButtonTypes().setAll(btype);
+
+                                    Optional<ButtonType> result = alt.showAndWait();
+                                    if (result.get() == btype) {
+                                        Game.stage.setScene(Game.mScene);
+
+                                    }
+                                }else{
+                                    time += 10;
+                                    btnSkill.setDisable(true);
+                                }
+                            }
+                        });
+
+                    }
+
+                }
+            },0, 1000);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+
 
 }

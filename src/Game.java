@@ -52,6 +52,10 @@ public class Game extends Application {
         map.init();
         mapScene = new Scene(map, 800, 600);
 
+        pStage.setOnCloseRequest(event -> {
+            gPane.timer.cancel();
+        });
+
 
 
 
@@ -105,6 +109,10 @@ public class Game extends Application {
 
         });
 
+
+    }
+
+    public void stop(){
 
     }
 
