@@ -1,25 +1,41 @@
 import javafx.scene.control.Button;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 
-public class Map extends GridPane {
+public class Map extends BorderPane {
 
-    Button[] nodes;
+    Button[] lv;
     private int nodeNum = 5;
-    int[] col = {1,2,3,4,5};
-    int[] row = {1,2,3,4,5};
+    HBox hbox;
+
 
     public void init(){
 
-        nodes = new Button[nodeNum];
+        lv = new Button[nodeNum];
+        hbox = new HBox();
 
         for(int i = 0; i < nodeNum; i++){
-            nodes[i] = new Button();
-            this.add(nodes[i], col[i], row[i]);
+            lv[i] = new Button("Dif: "+i);
+            hbox.getChildren().add(lv[i]);
+
+            int t = i;
+
+            lv[i].setOnMouseClicked(event -> {
+                Game.gPane.getChildren().removeAll(Game.gPane.mineArea);
+                Game.gPane.mineArea = Game.gPane.mines.init((11+2*t)*(11+2*t));
+                Game.gPane.getChildren().add(Game.gPane.mineArea);
+                Game.gScene.getStylesheets().add("/css/gameScene.css");
+
+                Game.stage.setScene(Game.gScene);
+
+                //Game
+
+
+            });
+
         }
 
-
-
-
+        this.setCenter(hbox);
 
 
     }

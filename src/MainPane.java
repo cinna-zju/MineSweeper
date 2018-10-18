@@ -3,32 +3,38 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 
 public class MainPane extends StackPane {
 
-    public SystemButton btnGo;
-    public SystemButton btnExit;
+    public Label btnGo;
 
 
     public void init(){
 
-        btnGo = new SystemButton("GO!");
-        btnExit = new SystemButton("EXIT");
+        btnGo = new Label("Play");
 
-        VBox btns = new VBox(btnGo, btnExit);
-        btns.setSpacing(20);
+        btnGo.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 24px");
+
 
 
         Label background = new Label();
         Label title = new Label();
 
-        title.setGraphic(new ImageView(new Image("/img/title.png")));
+        ImageView mainTitle = new ImageView(new Image("/img/title.png"));
+        mainTitle.setFitHeight(240);
+        mainTitle.setFitWidth(640);
+        title.setGraphic(mainTitle);
+
         background.setGraphic(new ImageView(new Image("/img/back.png")));
 
-        this.getChildren().addAll(background, title, btns);
-        StackPane.setMargin(btns, new Insets(500,50,200,600));
+        btnGo.setGraphic(new ImageView(new Image("/img/play.png")));
+        //btnExit.setGraphic(new ImageView(new Image("/img/exit.png")));
+
+
+
+        this.getChildren().addAll(background, title, btnGo);
+        StackPane.setMargin(btnGo, new Insets(300,0,100,350));
 
 
     }

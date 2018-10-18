@@ -1,42 +1,38 @@
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
-import javax.swing.text.AbstractDocument;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 
-public class GamePane extends GridPane{
+public class GamePane extends BorderPane {
     public Label text;
 
-    private SystemButton btnSettings;
-    public SystemButton btnSkill;
+    public Button btnSettings;
+    public Button btnSkill;
     Mines mines;
     private VBox textArea;
     private VBox systemArea;
     private Label lb_time;
     private int time;
 
-    private GridPane mineArea;
+    public GridPane mineArea;
     public Timer timer;
+
+    private boolean isMap = false;
+
 
 
     GamePane(){
@@ -48,20 +44,20 @@ public class GamePane extends GridPane{
         lb_time.setStyle("-fx-font-size: 20px;");
         mines = new Mines();
 
-        textArea.getChildren().add(text);
+        textArea.getChildren().addAll(text, lb_time);
         textArea.setPrefSize(120,250);
 
-        btnSettings = new SystemButton("Settings");
-        btnSkill = new SystemButton("Skill");
-        systemArea.getChildren().addAll(btnSettings, btnSkill);
+        btnSettings = new Button("Settings");
+        btnSkill = new Button("Skill");
+        systemArea.getChildren().addAll(textArea, btnSettings, btnSkill);
         systemArea.setSpacing(20);
 
+        this.setRight(systemArea);
 
-        this.add(lb_time, 1, 0, 1, 1);
-        this.add(textArea, 1,1, 1, 1);
-        this.add(systemArea,1,2, 1, 1);
+        this.setStyle("-fx-padding: 40px; -fx-alignment: baseline-center");
 
-        setTime();
+        //TODO set timer
+        //setTime();
 
 
 
@@ -72,40 +68,92 @@ public class GamePane extends GridPane{
 
         time = 10;
 
-
-
         mineArea = mines.init(100);
 
         updateInfo();
 
         this.getChildren().removeAll(mineArea);
-        this.add(mineArea, 0, 0, 1, 3);
+        this.setCenter(mineArea);
+        System.out.println(btnSkill.getText());
 
-        btnSkill.setOnDragDetected(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                Dragboard db = btnSkill.startDragAndDrop(TransferMode.MOVE);
-                ClipboardContent content = new ClipboardContent();
-                content.putString(btnSkill.getText());
-                db.setContent(content);
-                event.consume();
+        btnSettings.setGraphic(new ImageView(new Image("/img/settings.png")));
+
+        ImageView imgv = new ImageView();
+
+        switch (btnSkill.getText()){
+            case "Shield" :{
+                imgv.setImage(new Image("/img/shield.png"));
+                break;
             }
-        });
-
-        btnSkill.setOnDragDone(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
-                //TODO debug
-                //btnSkill.setDisable(true);
-                event.consume();
-
+            case "Detector":{
+                imgv.setImage(new Image("/img/detector.png"));
+                break;
             }
-        });
+            case "Timer":{
+                imgv.setImage(new Image("/img/timer.png"));
+                break;
+            }
+        }
 
+        imgv.setFitWidth(32);
+        imgv.setFitHeight(32);
+
+        btnSkill.setGraphic(imgv);
+
+
+        if(btnSkill.getText().equals("Detector")){
+
+            btnSkill.setOnDragDetected(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent event) {
+                    Dragboard db = btnSkill.startDragAndDrop(TransferMode.MOVE);
+                    ClipboardContent content = new ClipboardContent();
+
+                    //db.setDragView(new Image("/img/detector.png"));
+                    //content.putString();
+                    content.putImage(new Image("/img/detector.png"));
+                    db.setContent(content);
+
+                    event.consume();
+                }
+            });
+
+            btnSkill.setOnDragDone(new EventHandler<DragEvent>() {
+                @Override
+                public void handle(DragEvent event) {
+                    event.consume();
+                }
+            });
+
+        }
+
+
+
+
+
+
+
+        this.addEventHandler(ZoomEvent.ANY, event -> {
+//            if(isMap == false){
+//                isMap = true;
+//                Map map = new Map();
+//                map.init();
+//                Scene mapScene = new Scene(map, 600,450);
+//                Game.stage.setScene(mapScene);
+//
+//            }else{
+//
+//                Game.stage.setScene(Game.gScene);
+//
+//            }
+
+        });
 
 
 
     }
+
+
 
 
     public void updateInfo(){
@@ -114,7 +162,7 @@ public class GamePane extends GridPane{
 
     }
 
-    public int sum(int[][] aa){
+    private int sum(int[][] aa){
         int aaSum = 0;
         for(int i = 0; i < aa.length; i++) {
             for (int j = 0; j < aa[i].length; j++) {
@@ -146,13 +194,13 @@ public class GamePane extends GridPane{
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
-                                if (btnSkill.getText().equals("Timer") == false ||
-                                        (btnSkill.getText().equals("Timer") && btnSkill.isDisable() == true)) {
+                                if ( ! btnSkill.getText().equals("Timer") ||
+                                        (btnSkill.getText().equals("Timer") && btnSkill.isDisable())) {
                                     Alert alt = new Alert(Alert.AlertType.CONFIRMATION);
                                     alt.setContentText("Time is up");
 
                                     ButtonType btype = new ButtonType("Back to main menu");
-                                    alt.getButtonTypes().setAll(btype);
+                                    final boolean b = alt.getButtonTypes().setAll(btype);
 
                                     Optional<ButtonType> result = alt.showAndWait();
                                     if (result.get() == btype) {

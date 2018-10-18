@@ -12,8 +12,6 @@ import java.util.Optional;
 import java.util.Random;
 
 
-
-
 public class Mines extends Button {
 
     private Object[] minesIdx;
@@ -63,6 +61,7 @@ public class Mines extends Button {
 
         GridPane mineArea = new GridPane();
 
+
         btnNum = numbers;
         mineNum = (int) Math.sqrt(numbers);
         pos = new int[mineNum];
@@ -80,6 +79,7 @@ public class Mines extends Button {
             for (int j = 0; j < size; j++){
 
                 btn[i][j] = new Mines();
+
                 isClicked[i][j] = 0;
                 isFlag[i][j] = 0;
                 isDetected[i][j] = 0;
@@ -93,12 +93,6 @@ public class Mines extends Button {
             int y = pos[i] % size;
             btn[x][y].setText("M");
         }
-
-        //为什么 Lambda 表达式(匿名类) 不能访问非 final  的局部变量呢？
-        // 因为实例变量存在堆中，而局部变量是在栈上分配，Lambda 表达(匿名类) 会在另一个线程中执行。
-        // 如果在线程中要直接访问一个局部变量，可能线程执行时该局部变量已经被销毁了，
-        // 而 final 类型的局部变量在 Lambda 表达式(匿名类) 中其实是局部变量的一个拷贝。
-
 
         for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++) {
@@ -193,6 +187,8 @@ public class Mines extends Button {
                         }
 
                         Game.gPane.updateInfo();
+                        Game.gPane.btnSkill.setDisable(true);
+
 
                         event.consume();
                         event.setDropCompleted(true);

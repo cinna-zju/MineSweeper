@@ -1,11 +1,9 @@
-
-
 VBox{
     -fx-pref-width: 200px;
     -fx-pref-height: 400px;
-    -fx-background-color: #AAAAAA;
     -fx-alignment: center;
     -fx-spacing: 20px;
+
 }
 
 Label{
@@ -13,10 +11,3 @@ Label{
 
 }
 
-SkillPane{
-    -fx-spacing: 20px;
-    -fx-alignment: center;
-    -fx-pref-height: 400px;
-    -fx-pref-width: 800px;
-
-}

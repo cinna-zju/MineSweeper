@@ -19,9 +19,12 @@ public class Game extends Application {
 
     // declare main scene, game scene, skill scene
     static Scene mScene;
-    Scene gScene;
+    public static Scene gScene;
     Scene sScene;
     Scene mapScene;
+
+    int width = 700;
+    int height = 450;
 
     static Stage stage;
 
@@ -33,27 +36,26 @@ public class Game extends Application {
 
         mPane = new MainPane();
         mPane.init();
-        mScene = new Scene(mPane, 800, 600);
-        mScene.getStylesheets().add("/css/mainScene.css");
+        mScene = new Scene(mPane, width, height);
 
         sPane = new SkillPane();
         sPane.init();
-        sScene = new Scene(sPane, 800, 600);
+        sScene = new Scene(sPane, width, height);
         sScene.getStylesheets().add("/css/skillScene.css");
 
 
 
         gPane = new GamePane();
-        gScene = new Scene(gPane, 800, 600);
+        gScene = new Scene(gPane, width, height);
 
 
 
         map = new Map();
         map.init();
-        mapScene = new Scene(map, 800, 600);
+        mapScene = new Scene(map, width, height);
 
         pStage.setOnCloseRequest(event -> {
-            gPane.timer.cancel();
+            //gPane.timer.cancel();
         });
 
 
@@ -77,37 +79,32 @@ public class Game extends Application {
         });
 
         // exit the game
-        mPane.btnExit.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            stage.close();
-        });
+//        mPane.btnExit.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+//            stage.close();
+//        });
 
         // the user can choose 3 kinds of skills.
-        sPane.vbx1.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            gPane.init();
-            gPane.btnSkill.setText("Shield");
-            stage.setScene(gScene);
-            gScene.getStylesheets().add("/css/gameScene.css");
 
+        for(int i = 0; i < 3; i++){
+            int t = i;
+            sPane.vbx[t].setOnMouseClicked(event -> {
+                gPane.btnSkill.setText(sPane.lb[t].getText());
+                gPane.init();
 
-        });
+                pStage.setScene(gScene);
+                gScene.getStylesheets().add("/css/gameScene.css");
 
-        sPane.vbx2.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            gPane.init();
-            gPane.btnSkill.setText("Detector");
-            pStage.setScene(gScene);
-            gScene.getStylesheets().add("/css/gameScene.css");
+            });
+        }
 
-
-        });
-
-        sPane.vbx3.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            gPane.init();
-            gPane.btnSkill.setText("Timer");
-            stage.setScene(gScene);
-            gScene.getStylesheets().add("/css/gameScene.css");
-
+        gPane.btnSettings.setOnMouseClicked(event -> {
+            Map map = new Map();
+            map.init();
+            Scene ms = new Scene(map, width, height);
+            Game.stage.setScene(ms);
 
         });
+
 
 
     }
