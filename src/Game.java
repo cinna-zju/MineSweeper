@@ -5,36 +5,30 @@ import javafx.stage.Stage;
 
 public class Game extends Application {
 
-    // layout of the main scene
-    MainPane mPane;
-
     // layout of the game scene
     static GamePane gPane;
 
     // layout of the skill scene
-    SkillPane sPane;
-
-    //
-    Map map;
+    private SkillPane sPane;
 
     // declare main scene, game scene, skill scene
     static Scene mScene;
-    public static Scene gScene;
-    Scene sScene;
-    Scene mapScene;
+    static Scene gScene;
+    private Scene sScene;
 
-    int width = 700;
-    int height = 450;
+    static int width = 700;
+    static int height = 550;
 
     static Stage stage;
 
-    public void start(Stage pStage) throws Exception {
+    public void start(Stage pStage) {
 
 
         pStage.setTitle("MineSweeper");
         stage = pStage;// a copy of
 
-        mPane = new MainPane();
+        // layout of the main scene
+        MainPane mPane = new MainPane();
         mPane.init();
         mScene = new Scene(mPane, width, height);
 
@@ -50,21 +44,17 @@ public class Game extends Application {
 
 
 
-        map = new Map();
-        map.init();
-        mapScene = new Scene(map, width, height);
 
         pStage.setOnCloseRequest(event -> {
-            //gPane.timer.cancel();
+            try{
+                gPane.timer.cancel();
+            }catch (Exception ignored){
+
+            }
         });
-
-
-
-
 
         // the first scene of this game is main scene
         // contains two buttons, Go and Exit
-
 
         //TODO change first scene here
         stage.setScene(mScene);
@@ -73,10 +63,7 @@ public class Game extends Application {
 
 
         // go to the skill scene
-        mPane.btnGo.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            stage.setScene(sScene);
-
-        });
+        mPane.btnGo.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> stage.setScene(sScene));
 
         // exit the game
 //        mPane.btnExit.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
@@ -89,6 +76,7 @@ public class Game extends Application {
             int t = i;
             sPane.vbx[t].setOnMouseClicked(event -> {
                 gPane.btnSkill.setText(sPane.lb[t].getText());
+
                 gPane.init();
 
                 pStage.setScene(gScene);
@@ -108,11 +96,6 @@ public class Game extends Application {
 
 
     }
-
-    public void stop(){
-
-    }
-
 
 }
 

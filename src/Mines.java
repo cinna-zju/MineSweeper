@@ -1,30 +1,29 @@
-import javafx.event.EventHandler;
+
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.input.DragEvent;
+
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Random;
 
 
-public class Mines extends Button {
+class Mines extends Button {
 
-    private Object[] minesIdx;
     private Mines[][] btn;
 
-    int mineNum = 10;
-    int btnNum = 100;
-    int size;
-    int flagNum = 0;
-    int[] pos;
+    private int btnNum;
+    private int size;
+    int flagNum;
+    int numMine;
+    int[] pos; // mines index int
     int[][] isClicked;
-    int[][] isFlag;
-    int[][] isDetected;
+    private int[][] isFlag;
+    private int[][] isDetected;
 
 
 
@@ -34,7 +33,7 @@ public class Mines extends Button {
     // Description: use random number to create specific number of mines
     // Input: number of mines
     // Output: An array contains the index
-    public Object[] generate() {
+    private Object[] generate(int mineNum) {
         Object[] mines;
 
         HashSet<Integer> h = new HashSet<>();
@@ -57,18 +56,22 @@ public class Mines extends Button {
     // Input: the number of grids
     // Output: a GridPane layout
 
-    public GridPane init(int numbers) {
+    GridPane init(int numbers, int mineNum) {
 
         GridPane mineArea = new GridPane();
 
-
         btnNum = numbers;
-        mineNum = (int) Math.sqrt(numbers);
+        numMine = mineNum;
+
+        flagNum = 0;
+
         pos = new int[mineNum];
         size = (int) Math.sqrt(numbers);
         //System.out.println("mineNumbers:" + mineNumbers);
 
-        minesIdx = generate();
+        Object[] minesIdx;
+
+        minesIdx = generate(mineNum);
         btn = new Mines[size][size];
         isClicked = new int[size][size];
 
@@ -79,6 +82,11 @@ public class Mines extends Button {
             for (int j = 0; j < size; j++){
 
                 btn[i][j] = new Mines();
+                btn[i][j].setId("");
+                int btnsize = 450/size;
+                btn[i][j].setMinHeight(btnsize);
+                btn[i][j].setMinWidth(btnsize);
+                btn[i][j].setPadding(new Insets(0));
 
                 isClicked[i][j] = 0;
                 isFlag[i][j] = 0;
@@ -91,7 +99,8 @@ public class Mines extends Button {
             pos[i] = Integer.parseInt(minesIdx[i].toString());
             int x = pos[i] / size;
             int y = pos[i] % size;
-            btn[x][y].setText("M");
+            //TODO for debug
+            btn[x][y].setId("M");
         }
 
         for (int i = 0; i < size; i++)
@@ -105,21 +114,23 @@ public class Mines extends Button {
                         // left click
                         if (event.getButton() == MouseButton.PRIMARY) {
                             isClicked[x][y] = 1;
-                            if (btn[x][y].getText().equals("")) {
+                            if (btn[x][y].getId().equals("")) {
                                 btn[x][y].setStyle("-fx-background-color: #FFFFFF;");
                                 calc(x, y);
                             }
 
-                            if (btn[x][y].getText().equals("M")) {
+                            if (btn[x][y].getId().equals("M")) {
                                 btn[x][y].setStyle("-fx-background-color: #FF0000;");
 
                                 if(Game.gPane.btnSkill.getText().equals("Shield") &&
-                                        Game.gPane.btnSkill.isDisable() == false) {
+                                        !Game.gPane.btnSkill.isDisable()) {
                                     Game.gPane.btnSkill.setDisable(true);
+                                    isFlag[x][y] = 1;
+                                    flagNum++;
 
-                                    Alert alt = new Alert(Alert.AlertType.INFORMATION);
-                                    alt.setContentText("Something happened but you are still alive");
-                                    alt.showAndWait();
+//                                    Alert alt = new Alert(Alert.AlertType.INFORMATION);
+//                                    alt.setContentText("Something happened but you are still alive");
+//                                    alt.showAndWait();
 
 
 
@@ -130,15 +141,24 @@ public class Mines extends Button {
                                     //TODO game over dialog
                                     Alert alt = new Alert(Alert.AlertType.CONFIRMATION);
                                     alt.setContentText("Game Over");
+                                    Game.gPane.btnSkill.setDisable(false);
+
+                                    try{
+                                        Game.gPane.timer.cancel();
+                                    }catch(Exception ignored){
+                                        
+                                    }
 
                                     ButtonType btype = new ButtonType("Back to main menu");
                                     alt.getButtonTypes().setAll(btype);
 
-                                    Optional<ButtonType> result = alt.showAndWait();
-                                    if (result.get() == btype){
-                                        Game.stage.setScene(Game.mScene);
+                                    alt.showAndWait();
 
-                                    }
+
+
+                                    Game.stage.setScene(Game.mScene);
+
+
 
                                 }
 
@@ -166,81 +186,72 @@ public class Mines extends Button {
 
                 });
 
-                btn[x][y].setOnDragOver(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
+                btn[x][y].setOnDragOver(event -> {
+                    event.acceptTransferModes(TransferMode.MOVE);
+
+                    event.consume();
+                });
+
+
+                btn[x][y].setOnDragDropped(event -> {
+
+                    for(int i1 = -1; i1 < 2; i1++){
+                        for (int j1 = -1; j1 < 2; j1++){
+                            detect(x+ i1, y+ j1);
+                        }
+                    }
+
+                    Game.gPane.updateInfo();
+                    Game.gPane.btnSkill.setDisable(true);
+
+
+                    event.consume();
+                    event.setDropCompleted(true);
+
+                    event.consume();
+
+                });
+
+                btn[x][y].setOnDragEntered(event -> {
+                    if (event.getGestureSource() != btn[x][y]) {
                         event.acceptTransferModes(TransferMode.MOVE);
-
-                        event.consume();
-                    }
-                });
-
-
-                btn[x][y].setOnDragDropped(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-
-                        for(int i = -1; i < 2; i++){
-                            for (int j = -1; j < 2; j++){
-                                detect(x+i, y+j);
-                            }
-                        }
-
-                        Game.gPane.updateInfo();
-                        Game.gPane.btnSkill.setDisable(true);
-
-
-                        event.consume();
-                        event.setDropCompleted(true);
-
-                        event.consume();
-
-                    }
-                });
-
-                btn[x][y].setOnDragEntered(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-                        if (event.getGestureSource() != btn[x][y]) {
-                            event.acceptTransferModes(TransferMode.MOVE);
-                            for (int i = -1; i < 2; i++) {
-                                for (int j = -1; j < 2; j++) {
-                                    if (x + i < size && x + i >= 0 && y + j < size && y + j >= 0) {
-                                        btn[x + i][y + j].setStyle("-fx-background-color: #AAAAAA;");
-                                    }
+                        for (int i12 = -1; i12 < 2; i12++) {
+                            for (int j12 = -1; j12 < 2; j12++) {
+                                if (x + i12 < size && x + i12 >= 0 && y + j12 < size && y + j12 >= 0) {
+                                    btn[x + i12][y + j12].setStyle("-fx-background-color: #AAAAAA;");
                                 }
                             }
-
                         }
 
-                        event.consume();
                     }
+
+                    event.consume();
                 });
 
-                btn[x][y].setOnDragExited(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-                        if (event.getGestureSource() != btn[x][y]) {
-                            event.acceptTransferModes(TransferMode.MOVE);
-                            for (int i = -1; i < 2; i++) {
-                                for (int j = -1; j < 2; j++) {
-                                    if (x + i < size && x + i >= 0 && y + j < size && y + j >= 0) {
-                                        if (isClicked[x + i][y + j] == 1) {
-                                            btn[x + i][y + j].setStyle("-fx-background-color: #FFFFFF;");
-                                        } else {
-                                            btn[x + i][y + j].setStyle("-fx-background-color: #00EE99;");
-                                        }
-
-                                        if(isDetected[x+i][y+j] == -1) {
-                                            btn[x + i][y + j].setStyle("-fx-background-color: #FF0000;");
-                                        }
-
+                btn[x][y].setOnDragExited(event -> {
+                    if (event.getGestureSource() != btn[x][y]) {
+                        event.acceptTransferModes(TransferMode.MOVE);
+                        for (int ii = -1; ii < 2; ii++) {
+                            for (int jj = -1; jj < 2; jj++) {
+                                if (x + ii < size && x + ii >= 0 && y + jj < size && y + jj >= 0) {
+                                    if (isClicked[x + ii][y + jj] == 1) {
+                                        btn[x + ii][y + jj].setStyle("-fx-background-color: #FFFFFF;");
+                                    } else {
+                                        btn[x + ii][y + jj].setStyle("-fx-background-color: #00EE99;");
                                     }
+
+                                    if(isDetected[x+ ii][y+ jj] == -1) {
+                                        btn[x + ii][y + jj].setStyle("-fx-background-color: #FF0000;");
+                                        isFlag[x + ii][y + jj] = 1;
+                                        flagNum = getFlagNum();
+                                    }
+
                                 }
                             }
-
                         }
+
                     }
+                    Game.gPane.updateInfo();
                 });
             }
 
@@ -251,13 +262,26 @@ public class Mines extends Button {
 
     }
 
+
+    int getFlagNum(){
+        int count = 0;
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < size; j++){
+                if(isFlag[i][j] == 1){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
     // Method: calc
     // Desc: if there are mines around,
     // calculate the number of adjacent mines.
     // else, reveal the masked grids
     // Input: the x, y of the grid clicked
     // Output: void
-    public void calc(int x, int y) {
+    private void calc(int x, int y) {
 
         if(x >= size || x<0 || y >= size || y < 0)
             return;
@@ -289,13 +313,13 @@ public class Mines extends Button {
 
 
     //Method: detect
-    public void detect(int x, int y){
+    private void detect(int x, int y){
 
 
         if(x >= size || x<0 || y >= size || y < 0)
             return;
 
-        if (btn[x][y].getText().equals("M")){
+        if (btn[x][y].getId().equals("M")){
             isDetected[x][y] = -1;
 
         }else{
@@ -314,7 +338,7 @@ public class Mines extends Button {
 
 
 
-    public int getMineNumber(int x, int y){
+    private int getMineNumber(int x, int y){
         int numMine8 = 0;
 
         if(x >= size || x<0 || y >= size || y < 0)
@@ -328,7 +352,7 @@ public class Mines extends Button {
                         || isClicked[x + i][y + j] == 1)
                     continue;
 
-                if (btn[x + i][y + j].getText().equals("M")) {
+                if (btn[x + i][y + j].getId().equals("M")) {
                     numMine8++;
                 }
             }
@@ -336,6 +360,24 @@ public class Mines extends Button {
 
         return numMine8;
 
+    }
+
+    int[] getFlagPos(){
+        int[] idx = new int[numMine];
+        int i = 0;
+
+        while(i < numMine){
+            for(int p = 0; p < size; p++){
+                for(int q = 0; q < size; q++){
+                    if(isFlag[p][q] == 1){
+                        idx[i] = p * size + q;
+                        i++;
+                    }
+                }
+            }
+        }
+
+        return idx;
     }
 
 

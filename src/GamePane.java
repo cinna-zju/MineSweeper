@@ -1,5 +1,6 @@
 import javafx.application.Platform;
-import javafx.event.EventHandler;
+
+import javafx.event.Event;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -12,69 +13,96 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
-import java.util.Optional;
+
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class GamePane extends BorderPane {
-    public Label text;
+class GamePane extends BorderPane {
+    private Label text;
 
-    public Button btnSettings;
-    public Button btnSkill;
+    Button btnSettings;
+    Button btnSkill;
     Mines mines;
-    private VBox textArea;
-    private VBox systemArea;
-    private Label lb_time;
-    private int time;
+    private  Label lb_time, lb_remain, lb_exp;
+    int time;
 
-    public GridPane mineArea;
-    public Timer timer;
-
-    private boolean isMap = false;
+    GridPane mineArea;
+    Timer timer;
 
 
 
     GamePane(){
+
+        VBox textArea;
+
         textArea = new VBox();
-        text = new Label("Demo!");
-        systemArea = new VBox();
-        lb_time = new Label("Remain Time:\n");
-        //TODO change font size in css?
-        lb_time.setStyle("-fx-font-size: 20px;");
+        text = new Label("Welcome!\n\n");
+
+        Label text2 = new Label("Remain Mines:\n");
+        Label text3 = new Label("Explored Grids:\n");
+        Label text4 = new Label("Remain Time:\n");
+
+        text.setStyle("-fx-font-size: 13px; -fx-alignment: baseline-center; -fx-text-fill: slategray");
+        text2.setStyle("-fx-font-size: 13px; -fx-alignment: baseline-center; -fx-text-fill: slategray");
+        text3.setStyle("-fx-font-size: 13px; -fx-alignment: baseline-center; -fx-text-fill: slategray");
+        text4.setStyle("-fx-font-size: 13px; -fx-alignment: baseline-center; -fx-text-fill: slategray");
+
+
+
+        lb_time = new Label();
+        lb_time.setStyle("-fx-font-size: 26px; -fx-alignment: center; -fx-text-fill: brown");
+
+        lb_remain = new Label();
+        lb_remain.setStyle("-fx-font-size: 26px; -fx-alignment: center; -fx-text-fill: goldenrod");
+
+        lb_exp = new Label();
+        lb_exp.setStyle("-fx-font-size: 26px; -fx-alignment: center; -fx-text-fill: darkgreen");
+
         mines = new Mines();
 
-        textArea.getChildren().addAll(text, lb_time);
-        textArea.setPrefSize(120,250);
+        textArea.getChildren().addAll(text, text2, lb_remain, text3, lb_exp, text4, lb_time);
 
+        textArea.setPrefSize(150,325);
+
+        VBox systemArea = new VBox();
         btnSettings = new Button("Settings");
         btnSkill = new Button("Skill");
+        btnSettings.setMinWidth(110);
         systemArea.getChildren().addAll(textArea, btnSettings, btnSkill);
         systemArea.setSpacing(20);
+        //systemArea.setAlignment(Pos.BASELINE_LEFT);
 
         this.setRight(systemArea);
 
-        this.setStyle("-fx-padding: 40px; -fx-alignment: baseline-center");
+        Label toMap;
 
-        //TODO set timer
-        //setTime();
+        toMap = new Label("Zoom in to select difficulty");
+        toMap.setStyle("-fx-font-size: 20px; -fx-alignment: baseline-center; -fx-text-fill: slategray");
+
+        this.setTop(toMap);
+
+        this.setStyle("-fx-padding: 40px; -fx-alignment: baseline-center; -fx-spacing: 20px");
+
+
 
 
 
     }
 
 
-    public void init(){
+    void init(){
 
-        time = 10;
+        time = 90;
 
-        mineArea = mines.init(100);
+        mineArea = mines.init(100, 10);
 
         updateInfo();
 
         this.getChildren().removeAll(mineArea);
         this.setCenter(mineArea);
-        System.out.println(btnSkill.getText());
+        //System.out.println(btnSkill.getText());
 
         btnSettings.setGraphic(new ImageView(new Image("/img/settings.png")));
 
@@ -87,6 +115,7 @@ public class GamePane extends BorderPane {
             }
             case "Detector":{
                 imgv.setImage(new Image("/img/detector.png"));
+                text.setText("Welcome!\nDrag to use Detector\n\n");
                 break;
             }
             case "Timer":{
@@ -99,55 +128,46 @@ public class GamePane extends BorderPane {
         imgv.setFitHeight(32);
 
         btnSkill.setGraphic(imgv);
+        btnSkill.setMinWidth(110);
+
 
 
         if(btnSkill.getText().equals("Detector")){
 
-            btnSkill.setOnDragDetected(new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent event) {
-                    Dragboard db = btnSkill.startDragAndDrop(TransferMode.MOVE);
-                    ClipboardContent content = new ClipboardContent();
 
-                    //db.setDragView(new Image("/img/detector.png"));
-                    //content.putString();
-                    content.putImage(new Image("/img/detector.png"));
-                    db.setContent(content);
 
-                    event.consume();
-                }
+
+            btnSkill.setOnDragDetected(event -> {
+                Dragboard db = btnSkill.startDragAndDrop(TransferMode.MOVE);
+                ClipboardContent content = new ClipboardContent();
+
+                content.putImage(new Image("/img/detector.png"));
+                db.setContent(content);
+
+                event.consume();
             });
 
-            btnSkill.setOnDragDone(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    event.consume();
-                }
-            });
+            btnSkill.setOnDragDone(Event::consume);
 
         }
 
+        this.setOnZoom(event -> {
 
+            if(event.getZoomFactor() < 1){
+                try{
+                    timer.cancel();
 
+                }catch (Exception ignored){
 
-
-
-
-        this.addEventHandler(ZoomEvent.ANY, event -> {
-//            if(isMap == false){
-//                isMap = true;
-//                Map map = new Map();
-//                map.init();
-//                Scene mapScene = new Scene(map, 600,450);
-//                Game.stage.setScene(mapScene);
-//
-//            }else{
-//
-//                Game.stage.setScene(Game.gScene);
-//
-//            }
-
+                }
+                Map map = new Map();
+                map.init();
+                Scene ms = new Scene(map, Game.width, Game.height);
+                Game.stage.setScene(ms);
+            }
         });
+        //TODO time
+        setTime();
 
 
 
@@ -156,9 +176,45 @@ public class GamePane extends BorderPane {
 
 
 
-    public void updateInfo(){
-        text.setText("Demo!\n"+"Remain: " + (mines.mineNum - mines.flagNum) +
-                "\nExplored:" + sum(mines.isClicked));
+    void updateInfo(){
+
+        lb_remain.setText(Integer.toString(mines.numMine - mines.flagNum));
+        lb_exp.setText(Integer.toString(sum(mines.isClicked)));
+
+
+
+        //System.out.println(mines.numMine+" "+mines.flagNum);
+        if(mines.numMine - mines.flagNum == 0){
+            int[] a = mines.pos;
+            int[] b = mines.getFlagPos();
+
+            Arrays.sort(a);
+            Arrays.sort(b);
+
+            for(int i = 0; i < mines.numMine; i++) {
+                //System.out.println("a&b " + a[i] + " " + b[i]);
+
+                if(a[i] != b[i]){
+                    return;
+                }
+            }
+
+            try{
+                timer.cancel();
+
+            }catch(Exception ignored){
+
+            }
+
+            Alert alt = new Alert(Alert.AlertType.INFORMATION);
+            alt.setContentText("You win!");
+            alt.showAndWait();
+            Game.stage.setScene(Game.mScene);
+
+
+
+
+        }
 
     }
 
@@ -180,39 +236,32 @@ public class GamePane extends BorderPane {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            lb_time.setText("Remain Time:\n" + time);
-
-                        }
-                    });
+                    Platform.runLater(() -> lb_time.setText(Integer.toString(time)));
                     time--;
 
                     if(time == 0){
-                        //this.cancel();
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if ( ! btnSkill.getText().equals("Timer") ||
-                                        (btnSkill.getText().equals("Timer") && btnSkill.isDisable())) {
-                                    Alert alt = new Alert(Alert.AlertType.CONFIRMATION);
-                                    alt.setContentText("Time is up");
 
-                                    ButtonType btype = new ButtonType("Back to main menu");
-                                    final boolean b = alt.getButtonTypes().setAll(btype);
+                        Platform.runLater(() -> {
+                            if ( ! btnSkill.getText().equals("Timer") ||
+                                    (btnSkill.getText().equals("Timer") && btnSkill.isDisable())) {
+                                timer.cancel();
 
-                                    Optional<ButtonType> result = alt.showAndWait();
-                                    if (result.get() == btype) {
-                                        Game.stage.setScene(Game.mScene);
+                                Alert alt = new Alert(Alert.AlertType.CONFIRMATION);
+                                alt.setContentText("Time is up");
 
-                                    }
-                                }else{
-                                    time += 10;
-                                    btnSkill.setDisable(true);
-                                }
+                                ButtonType btype = new ButtonType("Back to main menu");
+                                alt.getButtonTypes().setAll(btype);
+
+                                alt.showAndWait();
+                                Game.stage.setScene(Game.mScene);
+
+
+                            }else{
+                                time += 30;
+                                btnSkill.setDisable(true);
                             }
                         });
+
 
                     }
 

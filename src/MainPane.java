@@ -5,12 +5,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 
 
-public class MainPane extends StackPane {
+class MainPane extends StackPane {
 
-    public Label btnGo;
+    Label btnGo;
 
 
-    public void init(){
+    void init(){
 
         btnGo = new Label("Play");
 
